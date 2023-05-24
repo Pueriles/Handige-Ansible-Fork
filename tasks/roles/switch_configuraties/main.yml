@@ -1,0 +1,60 @@
+---
+- name: "Configureren van een Cisco Switch"
+  hosts: SW
+  gather_facts: no
+  become: yes
+  connection: network_cli
+
+  tasks:
+    - name: "Configureer de banner"
+      ios_banner:
+        banner: login
+        text: "{{ banner }}"
+        state: present
+    
+    - name: "Verander de hostname"
+      ios_config:
+        lines:
+          - hostname {{ hostname }}
+
+    - name: "Maak vlans aan"
+      ios_vlan:
+        vlan_id: "{{ item.vlan_id }}"
+        name: "{{ item.name }}"
+        state: present
+      with_items:
+       - { vlan_id: 10, name: "Vlan10" }
+       - { vlan_id: 20, name: "Vlan20" }
+       - { vlan_id: 30, name: "Vlan30" }
+       - { vlan_id: 40, name: "Vlan40" }
+      
+    - name: "Configureer acces ports"
+      ios_config:
+        lines:
+          - interface {{ item.interface }}
+          - switchport mode access
+          - switchport access vlan {{ item.vlan }}
+        parents: interface {{ item.interface }}
+      with_items:
+        - { interface: "GigabitEthernet0/1", vlan: 10 }
+        - { interface: "GigabitEthernet0/2", vlan: 20 }
+        - { interface: "GigabitEthernet0/3", vlan: 30 }
+        - { interface: "GigabitEthernet0/4", vlan: 40 }
+
+    - name: "Configureer trunk port"
+      ios_config:
+        lines:
+          - interface {{ item.interface }}
+          - switchport mode trunk
+          - switchport trunk allowed vlan {{ item.vlan }}
+        parents: interface {{ item.interface }}
+      with_items:
+        - { interface: "GigabitEthernet0/5", vlan: "10,20,30,40" }
+
+    - name: "Shutdown ongebruikte interfaces"
+      ios_config: 
+        lines:
+          - interface range {{ unused_interface_range }}}
+          - shutdown
+        parents: interface range {{ unused_interface_range }}}
+
