@@ -1,11 +1,11 @@
-ansible_hosts = 192.168.x.x
+ansible_hosts: 192.168.x.x
 
 # GigabitEthernet1
-ip_GI1 = 192.168.x.x
-mask_GI1 = 255.255.255.0
-wildcard_GI1 = 0.0.0.255
+ip_GI1: 192.168.x.x
+mask_GI1: 255.255.255.0
+wildcard_GI1: 0.0.0.255
 
 # GigabitEthernet2
-ip_GI2 = 192.168.x.x
-mask_GI2 = 255.255.255.0
-wildcard_GI2 = 0.0.0.255
+ip_GI2: 192.168.x.x
+mask_GI2: 255.255.255.0
+wildcard_GI2: 0.0.0.255
