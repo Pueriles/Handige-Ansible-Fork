@@ -1,0 +1,35 @@
+---
+- name: "Configuratie van een router"
+  hosts: routers
+  gather_facts: no
+  become: yes
+  gather_facts: no
+  tasks:
+
+    - name: "Configureer de banner"
+      ios_banner:
+        banner: login
+        text: "{{ banner }}"
+        state: present
+
+    - name: "Verander de hostname"
+      ios_config:
+        lines:
+          - hostname {{ hostname }}
+
+    - name: "Maak een domain-name aan"
+      ios_config:
+        lines:
+          - ip domain-name {{ domain_name }}
+
+    - name: "Configureren van interfaces"
+      ios_config:
+        lines:
+          - interface {{ item.interface }}
+          - ip address {{ item.ip }} {{ item.mask }}
+          - ip ospf authentication-key 7 {{ ospf_pass }}
+          - no shutdown
+        parents: interface {{ item.interface }}
+      with_items:
+        - { interface: "GigabitEthernet0/1", ip: {{ ip_GI1 }}, mask: "{{ mask_GI1 }}" }
+        - { interface: "GigabitEthernet0/2", ip: {{ ip_GI2 }}, mask: "{{ mask_GI2 }}" }
