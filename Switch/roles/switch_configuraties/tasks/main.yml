@@ -15,7 +15,7 @@
     - name: "Verander de hostname"
       ios_config:
         lines:
-          - hostname {{ hostname }}
+          - hostname {{ inventory_hostname }}
 
     - name: "Maak vlans aan"
       ios_vlan:
@@ -28,7 +28,7 @@
        - { vlan_id: 30, name: "Vlan30" }
        - { vlan_id: 40, name: "Vlan40" }
       
-    - name: "Configureer acces ports"
+    - name: "Configureer access ports"
       ios_config:
         lines:
           - interface {{ item.interface }}
@@ -54,7 +54,10 @@
     - name: "Shutdown ongebruikte interfaces"
       ios_config: 
         lines:
-          - interface range {{ unused_interface_range }}}
+          - interface range {{ item.interface }}
           - shutdown
-        parents: interface range {{ unused_interface_range }}}
+        parents: interface range {{ item.interface }}
+      with_items:
+        - { interface: "GigabitEthernet0/6-24" }
+
 

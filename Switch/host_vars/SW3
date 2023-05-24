@@ -1,0 +1,4 @@
+ansible_hosts: 192.168.x.x
+
+# banner
+banner: "Unauthorized access is strictly prohibited, violators will be prosecuted to the fullest extent of the law"
