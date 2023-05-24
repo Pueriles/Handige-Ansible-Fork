@@ -33,3 +33,18 @@
       with_items:
         - { interface: "GigabitEthernet0/1", ip: {{ ip_GI1 }}, mask: "{{ mask_GI1 }}" }
         - { interface: "GigabitEthernet0/2", ip: {{ ip_GI2 }}, mask: "{{ mask_GI2 }}" }
+
+    - name: "Configureren van OSPF"
+      ios_config:
+        lines:
+          - router ospf 1
+          - network {{ item.network }} {{ item.wildcard }} area 0
+        parents: router ospf 1
+      with_items:
+        - { network: {{ ip_GI1 }}, wildcard: "{{ wildcard_GI1 }}" }
+        - { network: {{ ip_GI2 }}, wildcard: "{{ wildcard_GI2 }}" }
+
+    - name: "Maak user met privilege 15"
+      ios_config:
+        lines:
+          - username joshua privilege 15 secret 7 cisco       
