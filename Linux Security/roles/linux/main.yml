@@ -1,0 +1,122 @@
+---
+- hosts: linux_servers
+  become: true
+
+  #! Handler voor de restart van de sshd service.
+  handlers:
+    - name: Restart SSH service.
+      service: name=sshd state=restarted
+
+  tasks:
+    #! Verander de ssh port.
+    - name: Allow SSH to listen on port 2849.
+      seport:
+        ports: 2849
+        proto: tcp
+        setype: ssh_port_t
+        state: present
+      when: ansible_selinux.status == 'enabled'
+
+    #! Verander essentiele sshd configuratie.
+    - name: Update SSH configuration file for more security.
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        #! kijkt of er geen fouten zijn in de ssh configuratie file.
+        validate: 'sshd -t -f %s'
+      with_items:
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+        - regexp: "^PermitRootLogin"
+          line: "PermitRootLogin no"
+        - regexp: "^Port"
+          line: "Port 2849"
+      #! Handler wordt aangeroepen.
+      notify: restart ssh
+
+    #! User Account configurations.
+    - name: Add a new user.
+      user:
+        name: johndoe
+        comment: John Doe
+        password: "{{ 'password' | password_hash('sha512') }}"
+        shell: /bin/bash
+        createhome: yes
+        state: present
+
+    #! Disable root login and use `sudo`.
+    - name: Make the user a sudoer.
+      lineinfile:
+        dest: /etc/sudoers
+        regexp: '^johndoe'
+        line: 'johndoe ALL=(ALL) NOPASSWD: ALL'
+        state: present
+        # kijkt of er geen fouten zijn in de sudoers file.
+        validate: 'visudo -cf %s'
+
+    #! Verwijder ongebruikte packages.
+    - name: Remove unused packages.
+      package:
+        name:
+          - telnet
+        state: absent
+
+    #! Verander file permission van de log file.
+    - name: Configure the permissions for the messages log.
+      file:
+        path: /var/log/messages
+        owner: root
+        group: root
+        mode: 0600
+
+    #! Installeer + configureer auto updates.
+    - name: Install unattended upgrades package.
+      apt:
+        name: unattended-upgrades
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Copy unattended-upgrades configuration files in place.
+      template:
+        src: "../templates/{{ item }}.j2"
+        dest: "/etc/apt/apt.conf.d/{{ item }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - 20auto-upgrades
+        - 50unattended-upgrades
+      when: ansible_os_family == 'Debian'
+
+    #! Installeer en configureer fail2ban.
+    - name: Install fail2ban (Debian).
+      apt:
+        name: fail2ban
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Ensure fail2ban is running and enabled on boot.
+      service:
+        name: fail2ban
+        state: started
+        enabled: yes
+
+    #! SELinux.
+    - name: Install Python SELinux library.
+      dnf:
+        name: python3-libselinux
+        state: present
+
+    - name: Ensure SELinux is enabled in `targeted` mode.
+      selinux:
+        policy: targeted
+        state: enforcing
+
+    - name: Ensure httpd can connect to the network.
+      seboolean:
+        name: httpd_can_network_connect
+        state: yes
+        persistent: yes
+      when: ansible_selinux.status == 'enabled'
