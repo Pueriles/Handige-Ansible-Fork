@@ -11,5 +11,6 @@ ansible-galaxy collection install cisco.ios
 ## Werkende playbooks:
 - <h3><b> Switch </b></h3>
 - <h3><b> Router </b></h3>
+- <h3><b> Linux Security </b></h3>
 
 ![Ansible](https://www.freecodecamp.org/news/content/images/2021/09/ansble.png)
