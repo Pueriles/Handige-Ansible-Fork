@@ -1,4 +1,4 @@
-ansible_ssh_user=joshua
+ansible_ssh_user=sebastiaan
 ansible_ssh_pass=Welkom01!
 ansible_ssh_port=22
 ansible_connection=ssh
