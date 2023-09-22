@@ -1,16 +1,26 @@
-- name: Join to domain
-  win_domain_membership:
-    dns_domain_name: tycho.local
-    hostname: mydomainclient
-    domain_admin_user: "{{ win_domain_admin_user }}"
-    domain_admin_password: "{{ win_domain_admin_password }}"
-    domain_ou_path: "OU=Windows,OU=Servers,DC=tycho,DC=local"
-    state: domain
-  register: domain_state
+---
+- hosts: linux_servers
+  become: true
 
-- name: set group with delete protection enabled
-  win_domain_group:
-    name: Users
-    scope: domainlocal
-    category: security
-    ignore_protection: no
+  #! Handler voor de restart van de sshd service.
+  handlers:
+    - name: Restart SSH service.
+      service: name=sshd state=restarted
+
+  tasks:
+  - name: Join to domain
+    win_domain_membership:
+      dns_domain_name: tycho.local
+      hostname: mydomainclient
+      domain_admin_user: "{{ win_domain_admin_user }}"
+      domain_admin_password: "{{ win_domain_admin_password }}"
+      domain_ou_path: "OU=Windows,OU=Servers,DC=tycho,DC=local"
+      state: domain
+    register: domain_state
+  
+  - name: set group with delete protection enabled
+    win_domain_group:
+      name: Users
+      scope: domainlocal
+      category: security
+      ignore_protection: no
