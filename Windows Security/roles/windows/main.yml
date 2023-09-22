@@ -25,3 +25,17 @@
         scope: domainlocal
         category: security
         ignore_protection: no
+
+      - name: Install security updates
+        win_updates:
+          category_names:
+            - SecurityUpdates
+          Notify: reboot windows system
+
+      – name: Install missing updates
+         win_updates:
+           Category_names:
+              – ServicePacks
+              – UpdateRollups        
+              – CriticalUpdates
+           Reboot: yes
