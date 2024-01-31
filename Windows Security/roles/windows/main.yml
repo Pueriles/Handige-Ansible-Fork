@@ -1,5 +1,5 @@
 ---
-- hosts: linux_servers
+- hosts: windows_servers
   become: true
 
   #! Handler voor de restart van de sshd service.
